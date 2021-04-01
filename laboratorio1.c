@@ -24,14 +24,14 @@ int main(int argc, char*argv[]){
     //char* para poder luego hacer aritmetica
     //char ingredients[2100]; pero no estariamos reservando
     if(argc < 2){
-        printf("You must specify a filepath\n");
+        fprintf("You must specify a filepath\n");
         return EXIT_FAILURE;
     } 
     //Apuntador
     FILE* fileRef = fopen(argv[1], "r");
 
     if(!fileRef){
-        printf("Error opening the file %s\n", argv[1]);
+        fprintf("Error opening the file %s\n", argv[1]);
         return EXIT_FAILURE;
     }
 
@@ -61,8 +61,8 @@ int main(int argc, char*argv[]){
     {
         //printf("Linea: %s\n", line);
         //Vamos a procesar la linea
-        char *token;
-        char *rest = line; //contiene la linea leida
+        char* token;
+        char* rest = line; //contiene la linea leida
         //strtok_r()
         if(linecount == 0){
             while((token = strtok_r(rest, " ", &rest))){
@@ -116,10 +116,6 @@ int main(int argc, char*argv[]){
                         break;
                     }
                 }
-                for(int j=0; j<numOfDifferentIngredients; j++){
-                    printf("%s-",ingredients+(j*21));
-                }
-                printf("%s\n", token);
 
                 if(comparisonSomeIsEqual == -1){
                     strcpy((ingredients+(numOfDifferentIngredients*21)), token);
@@ -179,7 +175,6 @@ int main(int argc, char*argv[]){
                         ++s2;
                     }
                     *s2 = '\0';
-                    break;
                 }
 
             }
@@ -205,10 +200,11 @@ int main(int argc, char*argv[]){
     printf("NTPP (Número total de platos) = %d\n", NTPP);
     printf("I (Cantidad de ingredientes total que no se repiten) = %d\n", numOfDifferentIngredients);    
     printf("Lista de ingredientes que no se repiten: \n");
+    */
     for(int i=0; i<numOfDifferentIngredients; i++){
         printf("%s\n", (ingredients + (i*21)) + 0 ); //Array que contiene la lista de ingredientes
     }
-    */
+    
     //int *h = &P[0][0];
     //printf("%i", *h);
 
