@@ -2,6 +2,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+int maxIngredientsQuantityResult = 0;
+int maxSolutionVector[];
+
 //REVISAR PORQUE *WORDS[] PRODUCE UN WARNING
 int verifyIngredientsQuantity(int quantity, char words[] ){
     //1 para OK
@@ -84,6 +87,54 @@ int calculateOrderWithFourPlates(int platesTwo, int platesThree, int plates, int
     }
     return counter;    
 }
+void swap (int *x, char *y)
+{
+    int temp;
+    temp = *x;
+    *x = *y;
+    *y = temp;
+}
+
+void print(const int *v)
+{
+    int i;
+    int size = 4;
+    if (v != 0) {
+    for ( i = 0; i < size; i++) {
+        printf("%4d", v[i] );
+    }
+    printf("\n");
+  }
+}
+
+void heappermute(int solutionVector[], int n, int p2, int p3, int p4, int ingredients, int **matriz ) {
+    int i;   
+    if (n == 1) {
+        //print(solutionVector);
+        int resultPlatesTwo = calculateOrderWithTwoPlates(p2, ingredients, matriz, solutionVector);
+        int resultPlatesThree = calculateOrderWithThreePlates(p2, p3, ingredients, matriz, solutionVector);
+        int resultPlatesFour = calculateOrderWithFourPlates(p2, p3, p4, ingredients, matriz, solutionVector);
+        int resultPlates = resultPlatesTwo + resultPlatesThree + resultPlatesFour;
+        
+
+        if(resultPlates > maxIngredientsQuantityResult){
+            maxIngredientsQuantityResult = resultPlates;
+            maxSolutionVector = solutionVector;
+        }   
+
+	}
+    else {
+        for (i = 0; i < n; i++) {
+            heappermute(solutionVector, n-1, p2, p3, p4, ingredients, **matriz);
+            if (n % 2 == 1) {
+                swap(&solutionVector[0], &solutionVector[n-1]);
+	        }
+            else {
+                swap(&solutionVector[i], &solutionVector[n-1]);
+            }
+	    }
+    }
+}
 
 
 int main(int argc, char*argv[]){
@@ -108,7 +159,8 @@ int main(int argc, char*argv[]){
     //Vamos a leer el archivo linea por linea
     char line[1024]; //Si la linea mide más de esto, solo toma lo que quepa
     //char *rest = line; // * es un apuntador
-
+    
+    
     int linecount = 0;
     int quantities[4];
     int termscount = 0;
@@ -205,6 +257,7 @@ int main(int argc, char*argv[]){
         return EXIT_FAILURE;
     }
     int solutionVector[NTPP];
+    
     for(int i=0; i<NTPP; i++){
         solutionVector[i] = i;
         //printf("-%d", solutionVector[i]);
@@ -280,6 +333,7 @@ int main(int argc, char*argv[]){
 
     fclose(fileRef2);
 
+    /*
     int resultPlatesTwo = calculateOrderWithTwoPlates(P2, numOfDifferentIngredients, P, solutionVector);
     printf("result plates two %d\n", resultPlatesTwo);
 
@@ -290,7 +344,14 @@ int main(int argc, char*argv[]){
     printf("result plates four %d\n", resultPlatesFour);
 
     int resultPlates = resultPlatesTwo + resultPlatesThree + resultPlatesFour;
-    printf("Cantidad de ingredientes %d\n", resultPlates);
+    printf("Cantidad de ingredientes %d\n", resultPlates);*/
+
+    /*
+    int vector[] = {1,2,3,4};
+    heappermute(vector, 4);*/
+
+    heappermute(solutionVector, NTPP, P2, P3, P4, numOfDifferentIngredients, P);
+
 
     /*
     printf("PP (Cantidad de platos pedidos) = %d\n", PP);
