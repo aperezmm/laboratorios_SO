@@ -15,23 +15,93 @@ int verifyIngredientsQuantity(int quantity, char words[] ){
 
 void viewIngredients(int start, int interations){
     
-}   
+}
+
+//FUNCION PARA MAXIMIZAR PEDIDOS DE DOS PLATOS
+int calculateOrderWithTwoPlates(int plates, int ingredients, int **matriz, int *solution){
+    int counter = 0;
+    int a = 0;
+    int b = 0;
+    for(int i=0; i<plates; i++){
+        for(int j=0; j<ingredients; j++){
+
+            a = matriz[j][solution[(2*i)]];
+            //printf("[%d,%d] %d %d\t", j, i, matriz[j][solution[(2*i)]], matriz[j][solution[(2*i+1)]]);
+            
+            b = matriz[j][solution[(2*i+1)]];
+
+            //printf("a%d b%d\n", a, b);
+            if((a == 1) || (b == 1)){
+                counter = counter + 1;
+            }
+        }   
+    }
+    return counter;    
+}
+
+int calculateOrderWithThreePlates(int platesTwo, int plates, int ingredients, int **matriz, int *solution){
+    int counter = 0;
+    int a = 0;
+    int b = 0; 
+    int c = 0;
+    int baseSpace = 2*platesTwo; 
+    for(int i=0; i<plates; i++){
+        for(int j=0; j<ingredients; j++){
+
+            a = matriz[j][solution[baseSpace+(3*i)]];
+            //printf("[%d,%d] %d %d\t", j, i, matriz[j][solution[(2*i)]], matriz[j][solution[(2*i+1)]]);            
+            b = matriz[j][solution[baseSpace+(3*i+1)]];
+            c = matriz[j][solution[baseSpace+(3*i+2)]];
+            //printf("a%d b%d\n", a, b);
+            if((a == 1) || (b == 1) || (c == 1)){
+                counter = counter + 1;
+            }
+        }   
+    }
+    return counter;    
+}
+
+int calculateOrderWithFourPlates(int platesTwo, int platesThree, int plates, int ingredients, int **matriz, int *solution){
+    int counter = 0;
+    int a = 0;
+    int b = 0; 
+    int c = 0;
+    int d = 0;
+    int baseSpace = 2*platesTwo+3*platesThree;
+    for(int i=0; i<plates; i++){
+        for(int j=0; j<ingredients; j++){
+
+            a = matriz[j][solution[baseSpace+(4*i)]];
+            //printf("[%d,%d] %d %d\t", j, i, matriz[j][solution[(2*i)]], matriz[j][solution[(2*i+1)]]);            
+            b = matriz[j][solution[baseSpace+(4*i+1)]];
+            c = matriz[j][solution[baseSpace+(4*i+2)]];
+            d = matriz[j][solution[baseSpace+(4*i+3)]];
+            //printf("a%d b%d\n", a, b);
+            if((a == 1) || (b == 1) || (c == 1)){
+                counter = counter + 1;
+            }
+        }   
+    }
+    return counter;    
+}
+
 
 int main(int argc, char*argv[]){
 
-    char *ingredients = (char*)malloc(2100*sizeof(char)); //Para reservar memoria, ingredients va ser un apuntador
+    char *ingredients = (char*)malloc(2100*sizeof(char)); //Para resevar memoria, ingredients va ser un apuntador
+
 
     //char* para poder luego hacer aritmetica
     //char ingredients[2100]; pero no estariamos reservando
     if(argc < 2){
-        fprintf("You must specify a filepath\n");
+        printf("You must specify a filepath\n");
         return EXIT_FAILURE;
     } 
     //Apuntador
     FILE* fileRef = fopen(argv[1], "r");
 
     if(!fileRef){
-        fprintf("Error opening the file %s\n", argv[1]);
+        printf("Error opening the file %s\n", argv[1]);
         return EXIT_FAILURE;
     }
 
@@ -129,6 +199,17 @@ int main(int argc, char*argv[]){
     
     fclose(fileRef);  //Cerramos y le mandamos la dirección del apuntador
 
+
+    if(NTPP != PP){
+        printf("La cantidad de platos ingresada no coincide con lo que se estima. Revisa el archivo! \n");
+        return EXIT_FAILURE;
+    }
+    int solutionVector[NTPP];
+    for(int i=0; i<NTPP; i++){
+        solutionVector[i] = i;
+        //printf("-%d", solutionVector[i]);
+    }
+
     /*
     CONSTRUIMOS LA MATRIZ DE ACUERDO AL NÚMERO DE PLATOS PEDIDOS CON EL NÚMERO
     DE INGREDIENTES Y LA INICIALIZAMOS EN CEROS.
@@ -145,14 +226,14 @@ int main(int argc, char*argv[]){
         }
     }
 
-    
-//-------
     FILE *fileRef2 = fopen(argv[1], "r"); 
 
     char line2[1024];
     int linecount2 = 0;
     int numingredients2 = 0;
+    int ingredientAuxIndex = -1;
 
+    //LEEMOS EL ARCHIVO LINEA POR LINEA PARA EMPEZAR A LLENAR LA MATRIZ
     while(fgets(line2, sizeof(line2), fileRef2)){
         char* word;
         char* rest2 = line2;
@@ -167,8 +248,7 @@ int main(int argc, char*argv[]){
             //LEYENDO CADA UNO DE LOS INGREDIENTES DEL PLATO
             for(int i=0; i<numingredients2; i++){
                 word = strtok_r(rest2, " ", &rest2);
-                //printf("---%s", word);               
-                //TO BE CONTINUE... :(!
+                //printf("---%s", word);
                 if(i == numingredients2 - 1){
                     char *s2 = word;
                     while(*s2 != '\n'){
@@ -177,20 +257,40 @@ int main(int argc, char*argv[]){
                     *s2 = '\0';
                 }
 
+                //BUSCAMOS EL INGREDIENTE ACTUAL EN EL ARRAY DE INGREDIENTES
+                for(int j=0; j < numOfDifferentIngredients; j++){
+                    if(strcmp((ingredients+(j*21)), word) == 0){
+                        ingredientAuxIndex = j;
+                        break;
+                    }
+                }
+
+                //VALIDAMOS QUE SI ENCUENTRE LA PALABRA
+                if(ingredientAuxIndex == -1){
+                    printf("La palabra %s no se encontró", word);
+                    return EXIT_FAILURE;
+                }
+
+                //EMPEZAMOS A LLENAR LA MATRIZ
+                P[ingredientAuxIndex][linecount2-1] = 1;
             }
             linecount2++;
         }
-    }
-    
-
-    
+    } 
 
     fclose(fileRef2);
-    
-    if(NTPP != PP){
-        printf("La cantidad de platos ingresada no coincide con lo que se estima. Revisa el archivo! \n");
-        return EXIT_FAILURE;
-    }
+
+    int resultPlatesTwo = calculateOrderWithTwoPlates(P2, numOfDifferentIngredients, P, solutionVector);
+    printf("result plates two %d\n", resultPlatesTwo);
+
+    int resultPlatesThree = calculateOrderWithThreePlates(P2, P3, numOfDifferentIngredients, P, solutionVector);
+    printf("result plates three %d\n", resultPlatesThree);
+
+    int resultPlatesFour = calculateOrderWithFourPlates(P2, P3, P4, numOfDifferentIngredients, P, solutionVector);
+    printf("result plates four %d\n", resultPlatesFour);
+
+    int resultPlates = resultPlatesTwo + resultPlatesThree + resultPlatesFour;
+    printf("Cantidad de ingredientes %d\n", resultPlates);
 
     /*
     printf("PP (Cantidad de platos pedidos) = %d\n", PP);
@@ -200,10 +300,10 @@ int main(int argc, char*argv[]){
     printf("NTPP (Número total de platos) = %d\n", NTPP);
     printf("I (Cantidad de ingredientes total que no se repiten) = %d\n", numOfDifferentIngredients);    
     printf("Lista de ingredientes que no se repiten: \n");
-    */
+    
     for(int i=0; i<numOfDifferentIngredients; i++){
         printf("%s\n", (ingredients + (i*21)) + 0 ); //Array que contiene la lista de ingredientes
-    }
+    }*/
     
     //int *h = &P[0][0];
     //printf("%i", *h);
@@ -215,8 +315,8 @@ int main(int argc, char*argv[]){
         for(int j=0; j<PP; j++){
             printf("%d", P[i][j]);
         }
-    }*/
-    printf("\n");   
+    }
+    printf("\n");*/
 
 
     return EXIT_SUCCESS;
