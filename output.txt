@@ -1,3 +1,4 @@
+Realizado por: Alejandro Pérez & Juan Felipe Santa!
 
 Esta es la matriz de los platos: 
 
@@ -14,8 +15,8 @@ Esta es la matriz de los platos:
 
 Este es el vector solucion:   5  1  2  3  4  0  6  7  8
 
-La cantidad de ingredientes diferentes totales es: 26
-
 El pedido 0 contiene: cebolla, aji, queso, garbanzo, jamon, ajo, huevo, cilantro, 
 El pedido 1 contiene: cebolla, aji, queso, garbanzo, champi, pimenton, jamon, ajo, huevo, cilantro, 
 El pedido 2 contiene: champi, cebolla, pimenton, jamon, ajo, aji, queso, garbanzo, 
+
+La cantidad de ingredientes diferentes totales es: 26

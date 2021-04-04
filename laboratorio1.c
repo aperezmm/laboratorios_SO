@@ -6,7 +6,7 @@
 
 int aux = 0;
 int result = 0;
-int vectorSolution[9];
+int vectorSolution[20];
 
 int verifyIngredientsQuantity(int quantity, char words[] ){
     //1 para OK
@@ -43,7 +43,7 @@ int calculateOrderWithTwoPlates(int plates, int ingredients, int **matriz, int *
     }
     return counter;    
 }
-
+//FUNCION PARA MAXIMIZAR PEDIDOS DE TRES PLATOS
 int calculateOrderWithThreePlates(int platesTwo, int plates, int ingredients, int **matriz, int *solution){
     int counter = 0;
     int a = 0;
@@ -65,7 +65,7 @@ int calculateOrderWithThreePlates(int platesTwo, int plates, int ingredients, in
     }
     return counter;    
 }
-
+//FUNCION PARA MAXIMIZAR PEDIDOS DE CUATRO PLATOS
 int calculateOrderWithFourPlates(int platesTwo, int platesThree, int plates, int ingredients, int **matriz, int *solution){
     int counter = 0;
     int a = 0;
@@ -89,6 +89,7 @@ int calculateOrderWithFourPlates(int platesTwo, int platesThree, int plates, int
     }
     return counter;    
 }
+//ALGORITMO HEAP PARA LAS PERMUTACIONES
 void swap (int *x, int *y)
 {
     int temp;
@@ -96,8 +97,7 @@ void swap (int *x, int *y)
     *x = *y;
     *y = temp;
 }
-
-
+//FUNCIÓN PARA CALCULAR CANTIDAD MAXIMA DE INGREDIENTES POR CADA VECTOR SOLUCIÓN
 void print(int *solutionVector, int plates, int platesTwo, int platesThree, int platesFour, int ingredients, int **matriz)
 {
     int i;
@@ -117,9 +117,7 @@ void print(int *solutionVector, int plates, int platesTwo, int platesThree, int 
         }  
     }    
 }
-
-
-
+//FUNCIÓN PARA REALIZAR PERMUTACIÓN
 void heappermute(int *solutionVector, int n, int plates, int platesTwo, int platesThree, int platesFour, int ingredients, int **matriz) {
     int i;
     if (n == 1) {
@@ -138,30 +136,28 @@ void heappermute(int *solutionVector, int n, int plates, int platesTwo, int plat
     }
 }
 
-
+//METODO PRINCIPAL DE LA APLICACIÓN
 int main(int argc, char*argv[]){
 
-    char *ingredients = (char*)malloc(2100*sizeof(char)); //Para resevar memoria, ingredients va ser un apuntador
+    //RESERVAMOS MEMORIA
+    char *ingredients = (char*)malloc(2100*sizeof(char)); 
     char *archiveName = "output.txt";
 
-
-    //char* para poder luego hacer aritmetica
-    //char ingredients[2100]; pero no estariamos reservando
+    //VALIDACIÓN DEL ARCHIVO
     if(argc < 2){
-        printf("You must specify a filepath\n");
+        printf("Usted debe especificar un archivo, por favor vuelva a intentarlo.\n");
+        printf("EJEMPLO EN CONSOLA: ./laboratorio file.txt \n");
         return EXIT_FAILURE;
     } 
-    //Apuntador
+    //APUNTADOR
     FILE* fileRef = fopen(argv[1], "r");
 
+    //VERIFICAR QUE EL ARCHIVO SE HAYA ABIERTO CORRECTAMENTE
     if(!fileRef){
-        printf("Error opening the file %s\n", argv[1]);
+        printf("Ocurrió un error al abrir el archivo, intente nuevamente. %s\n", argv[1]);
         return EXIT_FAILURE;
     }
-
-    //Vamos a leer el archivo linea por linea
     char line[1024]; //Si la linea mide más de esto, solo toma lo que quepa
-    //char *rest = line; // * es un apuntador
 
     int linecount = 0;
     int quantities[4];
@@ -171,7 +167,6 @@ int main(int argc, char*argv[]){
     int P3 = 0;
     int P4 = 0;
     int NTPP = 0;
-    //Para el else
     int numingredients = 0;
     int numOfDifferentIngredients = 0;
     char *nullchar = '\0';
@@ -184,28 +179,29 @@ int main(int argc, char*argv[]){
     while(fgets(line, 1024, fileRef))
     {
         //printf("Linea: %s\n", line);
-        //Vamos a procesar la linea
         char* token;
-        char* rest = line; //contiene la linea leida
-        //strtok_r()
+        char* rest = line; //CONTIENE LA LINEA LEÍDA
         if(linecount == 0){
             while((token = strtok_r(rest, " ", &rest))){
-                quantities[termscount] = atoi(token); //Lo convierto a un entero
+                quantities[termscount] = atoi(token);
                 termscount++;
                 
-            } //Leame rest, partala donde encuentre espacio en blanco y lo
-            //que quede llevemelo a rest
+            }
             linecount++;
-            PP = quantities[0];
-            P2 = quantities[1];
-            P3 = quantities[2];
-            P4 = quantities[3];
-            NTPP = P2 * 2 + P3 * 3 + P4 * 4;
+            PP = quantities[0]; //CANTIDAD DE PLATOS PEDIDOS
+            P2 = quantities[1]; //CANTIDAD DE PEDIDOS DE DOS PLATOS
+            P3 = quantities[2]; //CANTIDAD DE PEDIDOS DE TRES PLATOS
+            P4 = quantities[3]; //CANTIDAD DE PEDIDOS DE CUATRO PLATOS
+            NTPP = P2 * 2 + P3 * 3 + P4 * 4; //NUMERO TOTAL DE PLATOS PEDIDOS
+
+            if(((2*P2)+(3*P3)+(4*P4)) != PP){
+                printf("La cantida de pedidos es diferente a la inicial, verifique el archivo! \n");
+                return EXIT_FAILURE;
+            }
         }
         else{
-            //Continuamos con la segunda linea, lectura de las lineas después de la primera
+            //APARTIR DE LA SEGUNDA LÍNEA DEL ARCHIVO SE EJECUTA
             token = strtok_r(rest, " ", &rest);
-            //printf("Que contiene token _: %s\n", token);
             numingredients = atoi(token);
 
             //TO DO: Verificar que el numingredients sea realmente el 
@@ -218,46 +214,47 @@ int main(int argc, char*argv[]){
             //LEEMOS CADA UNO DE LOS INGREDIENTES DE LA LINEA
             for(int i=0; i<numingredients; i++){
                 token = strtok_r(rest, " ", &rest);
-                //printf("Que contiene token2 _: %s\n", token);
-                //printf("Read token: %s\n", token); 
 
-                //Cuando leo el último ingrediente cambio un \n por un \0
+                //FUNCIÓN PARA CAMBIAR EL FIN DE LINEA POR FIN DE STRING
                 if(i == numingredients - 1){
-                    char *s = token; //Definimos un apuntador a char, y token es otro apuntador
-                    //si token no fuera un apuntador tocaba poner &token si fuera una variable
+                    char *s = token;
                     while(*s != '\n'){                       
                         ++s;                        
                     }
                     *s = '\0';
                 }
-                //printf("%s\n", token);
 
-                //cantidad de ingredientes diferentes.
-                int comparisonSomeIsEqual = -1; //Si algún ingrediente es igual
+                int comparisonSomeIsEqual = -1; 
                 for(int j=0; j<numOfDifferentIngredients; j++){
-                    if(strcmp((ingredients+(j*21)), token) == 0){ //Compara si es el mismo ingrediente
-                        comparisonSomeIsEqual = 0; //Cambia esto y rompe el ciclo
+                    if(strcmp((ingredients+(j*21)), token) == 0){ //COMPARA SI UN INGREDIENTE EXISTE
+                        comparisonSomeIsEqual = 0; //CAMBIA ESTADO DE VARIABLE Y ROMPE CICLO
                         break;
                     }
                 }
-
+                //FUNCIÓN PARA GUARDAR EL NUEVO INGREDIENTE Y AUMENTAR LA CANTIDAD DE INGREDIENTES DIFERENTES.
                 if(comparisonSomeIsEqual == -1){
-                    strcpy((ingredients+(numOfDifferentIngredients*21)), token);
-                    //Va separando de a 21 caracteres                    
+                    strcpy((ingredients+(numOfDifferentIngredients*21)), token);                   
                     numOfDifferentIngredients++;
-                }
-                
+                }                
             }
+            linecount++;
         }    
     }
     
-    fclose(fileRef);  //Cerramos y le mandamos la dirección del apuntador
+    fclose(fileRef);  //FINALIZAMOS LA PRIMER LEÍDA DEL ARCHIVO
 
-
+    //VALIDACIÓN PARA VERIFICAR QUE EL NÚMERO TOTAL DE PLATOS SEA IGUAL A LA CANTIDAD DE PLATOS PEDIDOS
     if(NTPP != PP){
         printf("La cantidad de platos ingresada no coincide con lo que se estima. Revisa el archivo! \n");
         return EXIT_FAILURE;
+    }  
+    
+    if(PP != (linecount-2)){
+        printf("La cantidad de platos pedidos es diferente a la cantidad de platos ingresados, por favor verifique el archivo!\n");
+        return EXIT_FAILURE;
     }
+
+    //FUNCIÓN PARA INICIALIZAR VECTOR SOLUCIÓN
     int solutionVector[NTPP];
     for(int i=0; i<NTPP; i++){
         solutionVector[i] = i;
@@ -280,6 +277,7 @@ int main(int argc, char*argv[]){
         }
     }
 
+    //LEEMOS EL ARCHIVO NUEVAMENTE
     FILE *fileRef2 = fopen(argv[1], "r"); 
 
     char line2[1024];
@@ -334,9 +332,11 @@ int main(int argc, char*argv[]){
 
     fclose(fileRef2);
 
+    /*HACEMOS LLAMADO AL METODO DE HIPERMUTAR, RECIBE TODOS ESOS PARAMETROS PARA REALIZAR LA RESPECTIVA
+    VALIDACIÓN POR CADA RESULTADO DE LA PERMUTACIÓN*/
     heappermute(solutionVector, NTPP, NTPP, P2, P3, P4, numOfDifferentIngredients, P);
 
-
+    //RESERVAMOS ESPACIO DE MEMORIA
     char *ingredientsForPlateTwo = (char*)malloc(2100*sizeof(char));
     char *ingredientsForPlateThree = (char*)malloc(2100*sizeof(char));
     char *ingredientsForPlateFour = (char*)malloc(2100*sizeof(char));
@@ -354,7 +354,10 @@ int main(int argc, char*argv[]){
     int auxPlatesFour = 0;
     
 
-
+    /*
+    FUNCIÓN PARA RECORRER LA MATRIZ SEGÚN LA POSICIÓN DEL MEJOR VECTOR SOLUCIÓN, Y TOMAR
+    CADA UNO DE LOS INGREDIENTES Y GUARDARLO.
+    */
     for(int j=0; j < NTPP; j++){
         for(int i=0; i < numOfDifferentIngredients; i++){
             
@@ -413,22 +416,23 @@ int main(int argc, char*argv[]){
                     if(comparisonIngredientsExist == -1){
                         strcpy(ingredientsForPlateFour+(numOfDifferentIngredientsForPlateFour*21), ingredientFour);
                         numOfDifferentIngredientsForPlateFour++;
-                    }
-                    
+                    }                    
                 }
                 auxPlatesFour++;
                 
-            }
-            
+            }            
         }
     }
 
-    FILE *archive = fopen(archiveName, "w");
+    FILE *archive = fopen(archiveName, "w"); //APUNTADOR AL ARCHIVO EN EL QUE VAMOS A ESCRIBIR
 
     if(archive == NULL){
         printf("Error abriendo archivo %s", archiveName);
         return EXIT_FAILURE;
     }
+
+    //PRINTFS PARA LA CONSOLA
+    int auxthree = 0;
 
     printf("\n");
     printf("Esta es la matriz de los platos: ");
@@ -447,30 +451,38 @@ int main(int argc, char*argv[]){
         printf("%3d", vectorSolution[j]);
     }
     printf("\n");
-
     printf("\n");
-    printf("La cantidad de ingredientes diferentes totales es: %d", aux);
-    printf("\n");
-    printf("\n");
+    
 
     printf("El pedido 0 contiene: ");
     for(int i=0; i<numOfDifferentIngredientsForPlateTwo; i++){
         printf("%s, ", (ingredientsForPlateTwo+(i*21))+0);
+        auxthree++;
     }
     printf("\n");
 
     printf("El pedido 1 contiene: ");
     for(int i=0; i<numOfDifferentIngredientsForPlateThree; i++){
         printf("%s, ", (ingredientsForPlateThree+(i*21))+0);
+        auxthree++;
     }
     printf("\n");
 
     printf("El pedido 2 contiene: ");
     for(int i=0; i<numOfDifferentIngredientsForPlateFour; i++){
         printf("%s, ", (ingredientsForPlateFour+(i*21))+0);
+        auxthree++;
     }
+    printf("\n");
 
-    //ESCRIBIMOS EN EL ARCHIVO
+    printf("\n");
+    printf("La cantidad de ingredientes diferentes totales es: %d", auxthree);
+    printf("\n");
+
+    //REALIZAMOS LA ESCRITURA EN EL ARCHIVO
+    
+    fprintf(archive, "Realizado por: Alejandro Pérez & Juan Felipe Santa!");
+    fprintf(archive, "\n");
     fprintf(archive, "\n");
     fprintf(archive, "Esta es la matriz de los platos: ");
     fprintf(archive,"\n");
@@ -489,9 +501,7 @@ int main(int argc, char*argv[]){
     }
     fprintf(archive,"\n");
 
-    fprintf(archive,"\n");
-    fprintf(archive,"La cantidad de ingredientes diferentes totales es: %d", aux);
-    fprintf(archive,"\n");
+    
     fprintf(archive,"\n");
 
     fprintf(archive,"El pedido 0 contiene: ");
@@ -510,6 +520,10 @@ int main(int argc, char*argv[]){
     for(int i=0; i<numOfDifferentIngredientsForPlateFour; i++){
         fprintf(archive,"%s, ", (ingredientsForPlateFour+(i*21))+0);
     }
+    fprintf(archive,"\n");
+    fprintf(archive,"\n");
+    fprintf(archive,"La cantidad de ingredientes diferentes totales es: %d", auxthree);
+    fprintf(archive,"\n");
 
     fclose(archive);
     printf("\n");
