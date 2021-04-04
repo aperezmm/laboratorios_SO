@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-//REVISAR PORQUE *WORDS[] PRODUCE UN WARNING
 
 int aux = 0;
 int result = 0;
@@ -18,9 +17,6 @@ int verifyIngredientsQuantity(int quantity, char words[] ){
     return 1;
 }
 
-void viewIngredients(int start, int interations){
-    
-}
 
 //FUNCION PARA MAXIMIZAR PEDIDOS DE DOS PLATOS
 int calculateOrderWithTwoPlates(int plates, int ingredients, int **matriz, int *solution){
@@ -529,6 +525,7 @@ int main(int argc, char*argv[]){
     printf("\n");
     printf("\n");
     puts("Contenido escrito correctamente");
+    printf("\n");
 
     return EXIT_SUCCESS;
     
