@@ -7,14 +7,22 @@ int aux = 0;
 int result = 0;
 int vectorSolution[20];
 
-int verifyIngredientsQuantity(int quantity, char words[] ){
-    //1 para OK
-    //0 para error
-    /*
-    printf("quantity %d\n", quantity);
-    printf("words %s\n", words);*/
-
-    return 1;
+unsigned countWords(char *str){
+    int state = 0;
+    unsigned wc = 0;  // word count
+    while (*str){
+        if (*str == ' ' || *str == '\n' || *str == '\t'){
+            state = 0;
+        }
+        else if (state == 0){
+            state = 1;
+            ++wc;
+        }
+        
+        ++str;
+    }
+ 
+    return wc;
 }
 
 
@@ -39,6 +47,7 @@ int calculateOrderWithTwoPlates(int plates, int ingredients, int **matriz, int *
     }
     return counter;    
 }
+
 //FUNCION PARA MAXIMIZAR PEDIDOS DE TRES PLATOS
 int calculateOrderWithThreePlates(int platesTwo, int plates, int ingredients, int **matriz, int *solution){
     int counter = 0;
@@ -61,6 +70,7 @@ int calculateOrderWithThreePlates(int platesTwo, int plates, int ingredients, in
     }
     return counter;    
 }
+
 //FUNCION PARA MAXIMIZAR PEDIDOS DE CUATRO PLATOS
 int calculateOrderWithFourPlates(int platesTwo, int platesThree, int plates, int ingredients, int **matriz, int *solution){
     int counter = 0;
@@ -85,17 +95,17 @@ int calculateOrderWithFourPlates(int platesTwo, int platesThree, int plates, int
     }
     return counter;    
 }
+
 //ALGORITMO HEAP PARA LAS PERMUTACIONES
-void swap (int *x, int *y)
-{
+void swap (int *x, int *y){
     int temp;
     temp = *x;
     *x = *y;
     *y = temp;
 }
+
 //FUNCIÓN PARA CALCULAR CANTIDAD MAXIMA DE INGREDIENTES POR CADA VECTOR SOLUCIÓN
-void print(int *solutionVector, int plates, int platesTwo, int platesThree, int platesFour, int ingredients, int **matriz)
-{
+void print(int *solutionVector, int plates, int platesTwo, int platesThree, int platesFour, int ingredients, int **matriz){
     int i;
     int size = plates;
     
@@ -113,6 +123,7 @@ void print(int *solutionVector, int plates, int platesTwo, int platesThree, int 
         }  
     }    
 }
+
 //FUNCIÓN PARA REALIZAR PERMUTACIÓN
 void heappermute(int *solutionVector, int n, int plates, int platesTwo, int platesThree, int platesFour, int ingredients, int **matriz) {
     int i;
@@ -172,8 +183,7 @@ int main(int argc, char*argv[]){
     DIFERENTES, CANTIDAD DE PEDIDOS DE DOS, TRES Y CUATRO PLATOS, EL NÚMERO
     TOTAL DE PLATOS PEDIDOS Y SE OBTIENE LOS INGREDIENTES DIFERENTES.
     */
-    while(fgets(line, 1024, fileRef))
-    {
+    while(fgets(line, 1024, fileRef)){
         //printf("Linea: %s\n", line);
         char* token;
         char* rest = line; //CONTIENE LA LINEA LEÍDA
@@ -202,8 +212,8 @@ int main(int argc, char*argv[]){
 
             //TO DO: Verificar que el numingredients sea realmente el 
             //numero de palabras que tiene la linea
-            int result = verifyIngredientsQuantity(numingredients, rest);
-            if( result == 0){
+            if( countWords(rest) != numingredients ){
+                printf("La cantidad de ingredientes es la linea [%s], no es igual a %d", rest, numingredients);
                 return EXIT_FAILURE;
             }
 
@@ -378,7 +388,6 @@ int main(int argc, char*argv[]){
                 auxPlatesTwo++;
                 
             }
-
             else if(auxPlatesThree < (3*numOfDifferentIngredients)){
                 if(P[i][vectorSolution[j]] == 1){
                     ingredientThree = ingredients+(i*21);
@@ -475,8 +484,7 @@ int main(int argc, char*argv[]){
     printf("La cantidad de ingredientes diferentes totales es: %d", auxthree);
     printf("\n");
 
-    //REALIZAMOS LA ESCRITURA EN EL ARCHIVO
-    
+    //REALIZAMOS LA ESCRITURA EN EL ARCHIVO    
     fprintf(archive, "Realizado por: Alejandro Pérez & Juan Felipe Santa!");
     fprintf(archive, "\n");
     fprintf(archive, "\n");
