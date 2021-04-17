@@ -2,21 +2,26 @@ Realizado por: Alejandro Pérez & Juan Felipe Santa!
 
 Esta es la matriz de los platos: 
 
-  1  0  0  1  0  0  0  0  0
-  1  0  1  1  0  1  1  1  1
-  1  0  0  1  0  0  0  0  0
-  1  1  0  1  1  0  0  0  0
-  1  1  0  1  1  0  0  0  0
-  0  1  0  0  1  0  0  0  0
-  0  1  0  0  1  0  0  0  0
-  0  1  1  0  1  1  1  1  1
-  0  0  1  0  0  1  1  1  1
-  0  0  1  0  0  1  1  1  1
+  1  0  0  1  0  0  0  0  0  0  0
+  1  0  1  1  0  1  1  1  1  0  0
+  1  0  0  1  0  0  0  0  0  0  0
+  1  1  0  1  1  0  0  0  0  0  0
+  1  1  0  1  1  0  0  0  0  0  0
+  0  1  0  0  1  0  0  0  0  0  0
+  0  1  0  0  1  0  0  0  0  0  0
+  0  1  1  0  1  1  1  1  1  0  0
+  0  0  1  0  0  1  1  1  1  0  0
+  0  0  1  0  0  1  1  1  1  0  0
+  0  0  0  0  0  0  0  0  0  1  0
+  0  0  0  0  0  0  0  0  0  1  0
+  0  0  0  0  0  0  0  0  0  1  0
+  0  0  0  0  0  0  0  0  0  0  1
+  0  0  0  0  0  0  0  0  0  0  1
 
-Este es el vector solucion:   5  1  2  3  4  0  6  7  8
+Este es el vector solucion:   5  0  3  6 10  1  2  9  4  7  8
 
-El pedido 0 contiene: cebolla, aji, queso, garbanzo, jamon, ajo, huevo, cilantro, 
-El pedido 1 contiene: cebolla, aji, queso, garbanzo, champi, pimenton, jamon, ajo, huevo, cilantro, 
-El pedido 2 contiene: champi, cebolla, pimenton, jamon, ajo, aji, queso, garbanzo, 
+El pedido 0 contiene: cebolla, aji, queso, garbanzo, champi, pimenton, jamon, ajo, 
+El pedido 1 contiene: champi, cebolla, pimenton, jamon, ajo, aji, queso, garbanzo, maiz, agua, 
+El pedido 2 contiene: jamon, ajo, huevo, cilantro, aji, cebolla, queso, garbanzo, arroz, panela, leche, 
 
-La cantidad de ingredientes diferentes totales es: 26
+La cantidad de ingredientes diferentes totales es: 29
