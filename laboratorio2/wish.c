@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <ctype.h>
 
 #define MAX_SIZE 100
 
@@ -82,11 +83,17 @@ struct SplittedResponse split_command_argument(char *command, char *delimiter){
     while(tok != NULL){
         strsep(&end, delimiter);
         printf("%s\n", tok);
-        strcpy((data_splitted+(numOfArguments*21)),tok);
         
-        numOfArguments++;
-        tok = end;        
+        char *s = tok;
+        if(*s != '\0'){
+            strcpy((data_splitted+(numOfArguments*21)),tok);
+            numOfArguments++;
+        }        
+        tok = end;      
+        
+               
     }
+
     struct SplittedResponse response;
     response.size = numOfArguments;
     response.data = data_splitted;
