@@ -8,6 +8,7 @@
 #include <fcntl.h>
 
 #define MAX_SIZE 100
+#define MAX_SIZE_COMMAND 512
 
 char *path_directory;
 
@@ -51,7 +52,8 @@ builtin_command str_to_command(char *strcommand)
 
 void handle_error(char *c)
 {
-    printf("An error has occurred\n");
+    char error_message[30] = "An error has occurred\n";
+    write(STDERR_FILENO, error_message, strlen(error_message)); 
 }
 
 int actual_directory()
@@ -348,15 +350,77 @@ int run_command_in_path(struct SplittedResponse splitted_command)
     }
 }
 
+int execute_batch_mode(FILE *file){
+
+    char line[MAX_SIZE_COMMAND];
+    while(fgets(line, 1024, file)){
+        char *token;
+        char *rest = line;
+        
+        
+    }
+}
+
+int execute_generic_command(char[] generic_command){
+    char *p = generic_command;
+    while (*p != '\n')
+    {
+        p++;
+    }
+    *p = '\0';
+
+    // Normalize the parameters to avoid problems
+    str_replace(generic_command, ">", " > ");
+    splitted_command = split_command_argument(generic_command, " ");
+
+    //IMPRIMIMOS EL ARRAY DE ELEMENTOS SEPARADOS POR EL CARACTER
+    // for (int i = 0; i < splitted_command.size; i++)
+    // {
+    //     printf("SPLITTED %d, %s\n", i, splitted_command.data + (i * 21));
+    // }
+
+    builtin_command command = str_to_command(splitted_command.data);
+
+    if (command != not_found)
+    {
+        switch (command)
+        {
+        case custom_exit:
+            exit(0);
+            break;
+
+        case custom_cd:
+            change_directory(splitted_command);
+            break;
+
+        case custom_path:
+            update_path(splitted_command);
+            break;
+
+        default:
+            printf("####### COMMAND UNHANDLED ########\n");
+        }
+    }
+    else
+    {
+        printf("Searching in binary paths...\n");
+        int response = run_command_in_path(splitted_command);
+        //printf("response in else %d\n", response);
+    }
+}
+
 int main(int argc, char *argv[])
-{
+{   
     char str[MAX_SIZE];
 
     // initialize the pathDirectory variable
+
     path_directory = malloc(4000 * sizeof(char *));
     strcpy((path_directory), "/bin/");
     strcpy((path_directory + (40)), "NULL");
 
+    struct SplittedResponse splitted_command;
+    
     if (argc > 2)
     {
         exit(1);
@@ -366,6 +430,20 @@ int main(int argc, char *argv[])
     if (argc == 2)
     {
         //TO DO: Iniciar el modo batch
+        printf("%s\n", argv[1]);
+        
+        FILE *fileRef = fopen(argv[1], "r");
+
+
+    //VERIFICAR QUE EL ARCHIVO SE HAYA ABIERTO CORRECTAMENTE
+        if(!fileRef){
+            handle_error("Error with file");
+            exit(1);
+        }
+
+        int batch_result = execute_batch_mode(fileRef);
+
+
     }
 
     // Interactive Mode
@@ -373,53 +451,9 @@ int main(int argc, char *argv[])
     {
         printf("wish> ");
         fgets(str, MAX_SIZE, stdin);
-        struct SplittedResponse splitted_command;
+        execute_generic_command(str);   
 
-        char *p = str;
-        while (*p != '\n')
-        {
-            p++;
-        }
-        *p = '\0';
-
-        // Normalize the parameters to avoid problems
-        str_replace(str, ">", " > ");
-        splitted_command = split_command_argument(str, " ");
-
-        //IMPRIMIMOS EL ARRAY DE ELEMENTOS SEPARADOS POR EL CARACTER
-        // for (int i = 0; i < splitted_command.size; i++)
-        // {
-        //     printf("SPLITTED %d, %s\n", i, splitted_command.data + (i * 21));
-        // }
-
-        builtin_command command = str_to_command(splitted_command.data);
-
-        if (command != not_found)
-        {
-            switch (command)
-            {
-            case custom_exit:
-                exit(0);
-                break;
-
-            case custom_cd:
-                change_directory(splitted_command);
-                break;
-
-            case custom_path:
-                update_path(splitted_command);
-                break;
-
-            default:
-                printf("####### COMMAND UNHANDLED ########\n");
-            }
-        }
-        else
-        {
-            printf("Searching in binary paths...\n");
-            int response = run_command_in_path(splitted_command);
-            //printf("response in else %d\n", response);
-        }
+        
 
     } while (1);
 }
