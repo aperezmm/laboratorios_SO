@@ -11,97 +11,110 @@
 
 char *path_directory;
 
-
 char my_path[MAX_SIZE];
 
-typedef enum{custom_exit, custom_cd, custom_path, not_found} builtin_command;
+typedef enum
+{
+    custom_exit,
+    custom_cd,
+    custom_path,
+    not_found
+} builtin_command;
 
-const static struct{
+const static struct
+{
     builtin_command command;
-    char* string_command;
+    char *string_command;
 } commands[] = {
     {custom_exit, "exit"},
     {custom_cd, "cd"},
-    {custom_path, "path"}
-};
+    {custom_path, "path"}};
 
-struct SplittedResponse{
+struct SplittedResponse
+{
     int size;
-    char* data;
+    char *data;
 };
 
-builtin_command str_to_command(char* strcommand){
+builtin_command str_to_command(char *strcommand)
+{
     int builtin_command_quantity = 3;
-    for(int i = 0; i < builtin_command_quantity; i++){
-        if(!strcmp(strcommand, commands[i].string_command)){
+    for (int i = 0; i < builtin_command_quantity; i++)
+    {
+        if (!strcmp(strcommand, commands[i].string_command))
+        {
             return commands[i].command;
         }
     }
     return not_found;
 }
 
-void handle_error(char* c){
+void handle_error(char *c)
+{
     printf("An error has occurred\n");
 }
 
-int actual_directory(){
+int actual_directory()
+{
     printf("%s\n", getcwd(my_path, MAX_SIZE));
 }
 
-int change_directory(struct SplittedResponse splitted_command){   
-    if (splitted_command.size >= 3){
+int change_directory(struct SplittedResponse splitted_command)
+{
+    if (splitted_command.size >= 3)
+    {
         //printf("wish: too many arguments\n");
         return -1;
     }
 
-    if (splitted_command.size == 1){
+    if (splitted_command.size == 1)
+    {
         chdir(getenv("HOME"));
         actual_directory();
         return 0;
-    }                  
+    }
 
-    char* route = splitted_command.data+(21);
+    char *route = splitted_command.data + (21);
     int result = chdir(route);
 
     actual_directory();
     //printf("Después de ejecutar el proceso hijo\n");
 
-    if(result == -1){
+    if (result == -1)
+    {
         //printf("wish: No such file or directory\n");
         return -1;
     }
     else
     {
         return 0;
-    }    
+    }
 }
 
-
-
-
-struct SplittedResponse split_command_argument(char *command, char *delimiter){
+struct SplittedResponse split_command_argument(char *command, char *delimiter)
+{
     //printf("split_command_argument command --[%s] delimiter --[%s]\n", command, delimiter);
-    
-    char *data_splitted = malloc(2100*sizeof(char*));
+
+    char *data_splitted = malloc(2100 * sizeof(char *));
     int numOfArguments = 0;
-    
+
     char *complete_result = strdup(command);
 
     char *tok = complete_result, *end = complete_result;
-    while(tok != NULL){
+    while (tok != NULL)
+    {
         strsep(&end, delimiter);
 
-        //printf("%s\n", tok);  
-        //ls /home > output.txt       
+        //printf("%s\n", tok);
+        //ls /home > output.txt
         char *s = tok;
-        if(*s != '\0'){
-            strcpy((data_splitted+(numOfArguments*21)),tok);
+        if (*s != '\0')
+        {
+            strcpy((data_splitted + (numOfArguments * 21)), tok);
             numOfArguments++;
         }
-         
-        tok = end;      
-        
-               
+
+        tok = end;
     }
 
     struct SplittedResponse response;
@@ -114,12 +127,14 @@ int is_command_with_redirection(struct SplittedResponse splitted_command)
 {
     int redirection_symbol_count = 0;
     //RECORRER CADA COMANDO Y CUENTA LA CANTIDAD DE '>'
-    for(int i=0; i< splitted_command.size; i++)
-    {   
-        char *command_arg = splitted_command.data+(i*21);
-        while(*command_arg != '\0'){
-            if(*command_arg == '>'){
-                redirection_symbol_count ++;
+    for (int i = 0; i < splitted_command.size; i++)
+    {
+        char *command_arg = splitted_command.data + (i * 21);
+        while (*command_arg != '\0')
+        {
+            if (*command_arg == '>')
+            {
+                redirection_symbol_count++;
             }
             command_arg++;
         }
@@ -127,12 +142,12 @@ int is_command_with_redirection(struct SplittedResponse splitted_command)
     //printf("redirection_symbol_count [%d]\n", redirection_symbol_count);
 
     //VALIDAMOS QUE EXISTA SOLO UN > Y ESTE EN LA POSICIÓN PENULTIMA
-    if(redirection_symbol_count == 1)
+    if (redirection_symbol_count == 1)
     {
         int index = splitted_command.size - 2;
         //printf("index_data [%s]\n", splitted_command.data+(index*21));
-        int is_equal = strcmp(splitted_command.data+(index*21), ">");
-        if(is_equal == 0)
+        int is_equal = strcmp(splitted_command.data + (index * 21), ">");
+        if (is_equal == 0)
         {
             return 1;
         }
@@ -140,17 +155,19 @@ int is_command_with_redirection(struct SplittedResponse splitted_command)
         {
             return -1;
         }
-        
     }
-    else if(redirection_symbol_count == 0){
+    else if (redirection_symbol_count == 0)
+    {
         return 0;
     }
-    else{
+    else
+    {
         return -1; //ERROR
     }
 }
 
-int run_command_with_params(char* binary_path, struct SplittedResponse splitted_command){
+int run_command_with_params(char *binary_path, struct SplittedResponse splitted_command)
+{
     //TO DO:
     /*
     char* args = malloc(2100*sizeof(char*));
@@ -167,70 +184,71 @@ int run_command_with_params(char* binary_path, struct SplittedResponse splitted_
         printf("ARG ???????????????[%d] = [%s]\n", i, args[i]);
     }
     return args;*/
-    
+
     //ls /home>output.txt
 
     int is_redirection = is_command_with_redirection(splitted_command);
     printf("is_redirection: %d\n", is_redirection);
-    
-    if(is_redirection == -1){
+
+    // redirection with error.
+    if (is_redirection == -1)
+    {
         handle_error("Redirección con error");
     }
 
-    
-    if(is_redirection == 1){
-
+    if (is_redirection == 1)
+    {
         close(STDOUT_FILENO);
         int output_index = splitted_command.size - 1;
-        char *output_name = splitted_command.data+(output_index * 21);
+        char *output_name = splitted_command.data + (output_index * 21);
         open(output_name, O_CREAT | O_WRONLY | O_TRUNC, S_IRWXU);
 
-        char* args[splitted_command.size - 2];
+        char *args[splitted_command.size - 2];
 
-        for (int i = 0; i < splitted_command.size - 2; i++){
+        for (int i = 0; i < splitted_command.size - 2; i++)
+        {
             //printf("ARG[%d] = [%s]\n", i, splitted_command.data+(i*21));
-            args[i] = strdup(splitted_command.data+(i*21));
+            args[i] = strdup(splitted_command.data + (i * 21));
         }
         args[splitted_command.size - 2] = NULL;
         int response = execvp(binary_path, args);
     }
     else
     {
-        char* args[splitted_command.size+1];
+        char *args[splitted_command.size + 1];
         args[0] = strdup(binary_path);
-        for (int i = 1; i < splitted_command.size; i++){
+        for (int i = 1; i < splitted_command.size; i++)
+        {
             //printf("ARG[%d] = [%s]\n", i, splitted_command.data+(i*21));
-            args[i] = strdup(splitted_command.data+(i*21));
-        }        
+            args[i] = strdup(splitted_command.data + (i * 21));
+        }
         args[splitted_command.size] = NULL;
         int response = execvp(binary_path, args);
         printf("RESPONSE RUN_COMMAND_WITH_PARAMS %d\n", response);
     }
-
-    
 }
-
-
 
 int update_path(struct SplittedResponse splitted_command)
 {
-    if(splitted_command.size == 1)
+    if (splitted_command.size == 1)
     {
         //limpiar la variable path completamente
         strcpy(path_directory, "NULL");
     }
     else
     {
-        
-        for(int i = 1; i < splitted_command.size; i++){
 
-            char* p = splitted_command.data+(i*21);
+        for (int i = 1; i < splitted_command.size; i++)
+        {
 
-            while(*p != '\0'){
+            char *p = splitted_command.data + (i * 21);
+
+            while (*p != '\0')
+            {
                 p++;
             }
             p--;
-            if(*p != '/')
+            if (*p != '/')
             {
                 p++;
                 *p = '/';
@@ -239,11 +257,11 @@ int update_path(struct SplittedResponse splitted_command)
             {
                 p++;
                 *p = '\0';
-            } 
+            }
 
-            strcpy(path_directory+(i-1)*(40), splitted_command.data+(i*21));
+            strcpy(path_directory + (i - 1) * (40), splitted_command.data + (i * 21));
         }
-        strcpy(path_directory+( (splitted_command.size-1) *40), "NULL");
+        strcpy(path_directory + ((splitted_command.size - 1) * 40), "NULL");
     }
 
     /*
@@ -252,36 +270,39 @@ int update_path(struct SplittedResponse splitted_command)
     }*/
 }
 
-
-
-int run_command_in_path(struct SplittedResponse splitted_command){
+int run_command_in_path(struct SplittedResponse splitted_command)
+{
     int child = fork();
-    printf("%d\n", child);
+    // printf("%d\n", child);
 
-    if(child < 0){
+    if (child < 0)
+    {
         handle_error("a");
     }
-    else if(child == 0)
-    {        
+    else if (child == 0)
+    {
         int i = 0;
         char pathToFile[MAX_SIZE];
-        
+
         int is_executable = -1;
-        
-        while((path_directory + (i*40)) != "NULL" && is_executable == -1){
-            strcpy(pathToFile, (path_directory + (i*40)));
+
+        while ((path_directory + (i * 40)) != "NULL" && is_executable == -1)
+        {
+            strcpy(pathToFile, (path_directory + (i * 40)));
             strcat(pathToFile, splitted_command.data);
             //TO DO: Verificar que el archivo exista
             is_executable = access(pathToFile, X_OK);
             i++;
         }
-        printf("pathtofile: %s\n", pathToFile);
+        // printf("pathtofile: %s\n", pathToFile);
 
-        if(is_executable != -1){
-            return run_command_with_params(pathToFile, splitted_command);            
+        if (is_executable != -1)
+        {
+            return run_command_with_params(pathToFile, splitted_command);
         }
         printf("is executable%d\n", is_executable);
-        if(is_executable == -1){
+        if (is_executable == -1)
+        {
             printf("Comando no encontrado\n");
             return -1;
         }
@@ -292,17 +313,20 @@ int run_command_in_path(struct SplittedResponse splitted_command){
     }
 }
 
-int main(int argc, char* argv[]){
+int main(int argc, char *argv[])
+{
     char str[MAX_SIZE];
 
-    path_directory = malloc(4000*sizeof(char*));
+    path_directory = malloc(4000 * sizeof(char *));
     strcpy((path_directory), "/bin/");
-    strcpy((path_directory+(40)), "NULL");
-    if(argc > 2){
+    strcpy((path_directory + (40)), "NULL");
+    if (argc > 2)
+    {
         exit(1);
     }
 
-    if(argc == 2){
+    if (argc == 2)
+    {
         //TO DO: Iniciar el modo batch
     }
 
@@ -311,13 +335,14 @@ int main(int argc, char* argv[]){
         printf("wish> ");
         fgets(str, MAX_SIZE, stdin);
         struct SplittedResponse splitted_command;
-        
-        char* p = str;
-        while(*p != '\n'){
+
+        char *p = str;
+        while (*p != '\n')
+        {
             p++;
         }
         *p = '\0';
-        
+
         splitted_command = split_command_argument(str, " ");
 
         //IMPRIMIMOS EL ARRAY DE ELEMENTOS SEPARADOS POR EL CARACTER
@@ -326,23 +351,24 @@ int main(int argc, char* argv[]){
             printf("SPLITTED %d, %s\n", i, splitted_command.data+(i*21));
         }*/
         builtin_command command = str_to_command(splitted_command.data);
-        
-        if(command != not_found){
-            switch(command)
+
+        if (command != not_found)
+        {
+            switch (command)
             {
-                case custom_exit:
-                    exit(0);
-                    break;
-                case custom_cd:
-                    change_directory(splitted_command);                     
+            case custom_exit:
+                exit(0);
+                break;
+            case custom_cd:
+                change_directory(splitted_command);
 
-                    break;
-                case custom_path:
-                    update_path(splitted_command);
+                break;
+            case custom_path:
+                update_path(splitted_command);
 
-                    break;
-                default:
-                    printf("#######################\n");
+                break;
+            default:
+                printf("#######################\n");
             }
         }
         else
@@ -353,5 +379,5 @@ int main(int argc, char* argv[]){
             //printf("response in else %d\n", response);
         }
 
-    }while(1);
-} 
+    } while (1);
+}
