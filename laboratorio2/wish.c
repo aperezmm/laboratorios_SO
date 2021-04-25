@@ -91,6 +91,41 @@ int change_directory(struct SplittedResponse splitted_command)
     }
 }
 
+void str_replace(char *target, const char *needle, const char *replacement)
+{
+    char buffer[1024] = {0};
+    char *insert_point = &buffer[0];
+    const char *tmp = target;
+    size_t needle_len = strlen(needle);
+    size_t repl_len = strlen(replacement);
+
+    while (1)
+    {
+        const char *p = strstr(tmp, needle);
+
+        // walked past last occurrence of needle; copy remaining part
+        if (p == NULL)
+        {
+            strcpy(insert_point, tmp);
+            break;
+        }
+
+        // copy part before needle
+        memcpy(insert_point, tmp, p - tmp);
+        insert_point += p - tmp;
+
+        // copy replacement string
+        memcpy(insert_point, replacement, repl_len);
+        insert_point += repl_len;
+
+        // adjust pointers, move on
+        tmp = p + needle_len;
+    }
+
+    // write altered string back to target
+    strcpy(target, buffer);
+}
+
 struct SplittedResponse split_command_argument(char *command, char *delimiter)
 {
     //printf("split_command_argument command --[%s] delimiter --[%s]\n", command, delimiter);
@@ -317,19 +352,23 @@ int main(int argc, char *argv[])
 {
     char str[MAX_SIZE];
 
+    // initialize the pathDirectory variable
     path_directory = malloc(4000 * sizeof(char *));
     strcpy((path_directory), "/bin/");
     strcpy((path_directory + (40)), "NULL");
+
     if (argc > 2)
     {
         exit(1);
     }
 
+    // Batch Mode
     if (argc == 2)
     {
         //TO DO: Iniciar el modo batch
     }
 
+    // Interactive Mode
     do
     {
         printf("wish> ");
@@ -343,13 +382,16 @@ int main(int argc, char *argv[])
         }
         *p = '\0';
 
+        // Normalize the parameters to avoid problems
+        str_replace(str, ">", " > ");
         splitted_command = split_command_argument(str, " ");
 
         //IMPRIMIMOS EL ARRAY DE ELEMENTOS SEPARADOS POR EL CARACTER
-        /*
-        for (int i = 0; i < splitted_command.size; i++){
-            printf("SPLITTED %d, %s\n", i, splitted_command.data+(i*21));
-        }*/
+        // for (int i = 0; i < splitted_command.size; i++)
+        // {
+        //     printf("SPLITTED %d, %s\n", i, splitted_command.data + (i * 21));
+        // }
+
         builtin_command command = str_to_command(splitted_command.data);
 
         if (command != not_found)
@@ -359,22 +401,22 @@ int main(int argc, char *argv[])
             case custom_exit:
                 exit(0);
                 break;
+
             case custom_cd:
                 change_directory(splitted_command);
-
                 break;
+
             case custom_path:
                 update_path(splitted_command);
-
                 break;
+
             default:
-                printf("#######################\n");
+                printf("####### COMMAND UNHANDLED ########\n");
             }
         }
         else
         {
-            printf("Buscando en el path...\n");
-
+            printf("Searching in binary paths...\n");
             int response = run_command_in_path(splitted_command);
             //printf("response in else %d\n", response);
         }
