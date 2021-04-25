@@ -206,7 +206,7 @@ int is_command_with_redirection(struct SplittedResponse splitted_command)
 int run_command_with_params(char *binary_path, struct SplittedResponse splitted_command)
 {
     int is_redirection = is_command_with_redirection(splitted_command);
-    printf("is_redirection: %d\n", is_redirection);
+    // printf("is_redirection: %d\n", is_redirection);
 
     // redirection with error.
     if (is_redirection == -1)
@@ -328,6 +328,7 @@ int run_command_in_path(struct SplittedResponse splitted_command)
     else
     {
         int wait_child = wait(NULL);
+        // printf("DESPUES DE ESPERAR HIJO [%s]\n", splitted_command.data);
     }
 }
 
@@ -336,6 +337,7 @@ int execute_generic_command(char *generic_command)
     struct SplittedResponse splitted_command;
     char *p = generic_command;
 
+    // Removes the \n and replaced by \0
     while (*p != '\n')
     {
         p++;
@@ -345,41 +347,64 @@ int execute_generic_command(char *generic_command)
     // Normalize the parameters to avoid problems
     str_replace(generic_command, ">", " > ");
     // printf("[%s]\n", generic_command);
-    splitted_command = split_command_argument(generic_command, " ");
 
-    //IMPRIMIMOS EL ARRAY DE ELEMENTOS SEPARADOS POR EL CARACTER
-    for (int i = 0; i < splitted_command.size; i++)
+    // Verificar si es un parallel command
+    splitted_command = split_command_argument(generic_command, "&");
+
+    int rc = fork();
+
+    // child
+    if (rc == 0)
     {
-        printf("SPLITTED %d, [%s]\n", i, splitted_command.data + (i * 21));
-    }
 
-    builtin_command command = str_to_command(splitted_command.data);
-
-    if (command != not_found)
-    {
-        switch (command)
+        for (int i = 0; i < splitted_command.size; i++)
         {
-        case custom_exit:
-            exit(0);
-            break;
+            printf("elemento de parallel [%s]\n", splitted_command.data + (i * 21));
+            struct SplittedResponse single_command;
 
-        case custom_cd:
-            change_directory(splitted_command);
-            break;
+            single_command = split_command_argument(splitted_command.data + (i * 21), " ");
+            //IMPRIMIMOS EL ARRAY DE ELEMENTOS SEPARADOS POR EL CARACTER
+            // for (int i = 0; i < single_command.size; i++)
+            // {
+            //     printf(" -->> SPLITTED %d, [%s]\n", i, single_command.data + (i * 21));
+            // }
 
-        case custom_path:
-            update_path(splitted_command);
-            break;
+            builtin_command command = str_to_command(single_command.data);
 
-        default:
-            printf("####### COMMAND UNHANDLED ########\n");
+            if (command != not_found)
+            {
+                switch (command)
+                {
+                case custom_exit:
+                    exit(0);
+                    break;
+
+                case custom_cd:
+                    change_directory(single_command);
+                    break;
+
+                case custom_path:
+                    update_path(single_command);
+                    break;
+
+                default:
+                    printf("####### COMMAND UNHANDLED ########\n");
+                }
+            }
+            else
+            {
+                // printf("Searching in binary paths...\n");
+                int response = run_command_in_path(single_command);
+                //printf("response in else %d\n", response);
+            }
         }
     }
     else
     {
-        printf("Searching in binary paths...\n");
-        int response = run_command_in_path(splitted_command);
-        //printf("response in else %d\n", response);
+        wait(NULL);
+        printf("Despues de esperar La Linea entera\n");
+
+        return 1;
     }
 }
 
@@ -390,6 +415,7 @@ int execute_batch_mode(FILE *file)
     while (fgets(line, 1024, file))
     {
         char *token = line;
+        // TODO buscar como eliminar el \r\n
         execute_generic_command(line);
     }
     exit(0);

@@ -1,3 +1,4 @@
-ls /home/jsanta
-echo "hola mundo" > out.txt
-pwd
+echo "Inicio" & date +"%HH-%mm-%SS"
+sleep 5
+date +"%HH-%mm-%SS"
+
