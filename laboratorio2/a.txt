@@ -1,0 +1,3 @@
+ls /home/jsanta
+echo "hola mundo" > out.txt
+pwd

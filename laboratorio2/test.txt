@@ -1,3 +1,0 @@
-cd /home
-echo "hola mundo" > hola.txt
-more hola.txt

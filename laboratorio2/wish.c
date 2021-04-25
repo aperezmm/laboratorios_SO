@@ -53,12 +53,12 @@ builtin_command str_to_command(char *strcommand)
 void handle_error(char *c)
 {
     char error_message[30] = "An error has occurred\n";
-    write(STDERR_FILENO, error_message, strlen(error_message)); 
+    write(STDERR_FILENO, error_message, strlen(error_message));
 }
 
 int actual_directory()
 {
-    printf("%s\n", getcwd(my_path, MAX_SIZE));
+    // printf("%s\n", getcwd(my_path, MAX_SIZE));
 }
 
 int change_directory(struct SplittedResponse splitted_command)
@@ -205,25 +205,6 @@ int is_command_with_redirection(struct SplittedResponse splitted_command)
 
 int run_command_with_params(char *binary_path, struct SplittedResponse splitted_command)
 {
-    //TO DO:
-    /*
-    char* args = malloc(2100*sizeof(char*));
-    strcpy(args, strdup(binary_path));
-    for (int i = 1; i < splitted_command.size; i++){
-        printf("ARG[%d] = [%s]\n", i, splitted_command.data+(i*21));
-        strcpy(args+(i*21), strdup(splitted_command.data+(i*21)));
-    }
-
-    //strcpy(args+(splitted_command.size*21), NULL);
-
-    /*
-    for (int i = 0; i < splitted_command.size; i++){
-        printf("ARG ???????????????[%d] = [%s]\n", i, args[i]);
-    }
-    return args;*/
-
-    //ls /home>output.txt
-
     int is_redirection = is_command_with_redirection(splitted_command);
     printf("is_redirection: %d\n", is_redirection);
 
@@ -350,22 +331,20 @@ int run_command_in_path(struct SplittedResponse splitted_command)
     }
 }
 
-int execute_generic_command(char* generic_command){
-    printf("execute_generic_command!\n");
-    printf("[%s]\n", generic_command);
+int execute_generic_command(char *generic_command)
+{
     struct SplittedResponse splitted_command;
     char *p = generic_command;
 
     while (*p != '\n')
-    {   
-        printf("[%s]\n", p);
+    {
         p++;
     }
     *p = '\0';
 
     // Normalize the parameters to avoid problems
     str_replace(generic_command, ">", " > ");
-    printf("[%s]\n", generic_command);
+    // printf("[%s]\n", generic_command);
     splitted_command = split_command_argument(generic_command, " ");
 
     //IMPRIMIMOS EL ARRAY DE ELEMENTOS SEPARADOS POR EL CARACTER
@@ -404,19 +383,20 @@ int execute_generic_command(char* generic_command){
     }
 }
 
-int execute_batch_mode(FILE *file){
-
+int execute_batch_mode(FILE *file)
+{
+    printf("execute_batch_mode\n");
     char line[MAX_SIZE_COMMAND];
-    while(fgets(line, 1024, file)){
-        char *token = line;        
-        
-        execute_generic_command(line);    
+    while (fgets(line, 1024, file))
+    {
+        char *token = line;
+        execute_generic_command(line);
     }
     exit(0);
 }
 
 int main(int argc, char *argv[])
-{   
+{
     char str[MAX_SIZE];
 
     // initialize the pathDirectory variable
@@ -426,26 +406,25 @@ int main(int argc, char *argv[])
     strcpy((path_directory + (40)), "NULL");
 
     struct SplittedResponse splitted_command;
-    
+
     if (argc > 2)
     {
         exit(1);
     }
     if (argc == 2)
     {
-        
-        printf("%s\n", argv[1]);        
+
         FILE *fileRef = fopen(argv[1], "r");
 
-    //VERIFICAR QUE EL ARCHIVO SE HAYA ABIERTO CORRECTAMENTE
-        if(!fileRef){
+        //VERIFICAR QUE EL ARCHIVO SE HAYA ABIERTO CORRECTAMENTE
+        if (!fileRef)
+        {
             handle_error("Error with file");
             exit(1);
         }
 
+        // TODO verificar los saltos de linea de los archivos. y los Segmentation fault
         int batch_result = execute_batch_mode(fileRef);
-
-
     }
 
     // Interactive Mode
