@@ -350,34 +350,29 @@ int run_command_in_path(struct SplittedResponse splitted_command)
     }
 }
 
-int execute_batch_mode(FILE *file){
-
-    char line[MAX_SIZE_COMMAND];
-    while(fgets(line, 1024, file)){
-        char *token;
-        char *rest = line;
-        
-        
-    }
-}
-
-int execute_generic_command(char[] generic_command){
+int execute_generic_command(char* generic_command){
+    printf("execute_generic_command!\n");
+    printf("[%s]\n", generic_command);
+    struct SplittedResponse splitted_command;
     char *p = generic_command;
+
     while (*p != '\n')
-    {
+    {   
+        printf("[%s]\n", p);
         p++;
     }
     *p = '\0';
 
     // Normalize the parameters to avoid problems
     str_replace(generic_command, ">", " > ");
+    printf("[%s]\n", generic_command);
     splitted_command = split_command_argument(generic_command, " ");
 
     //IMPRIMIMOS EL ARRAY DE ELEMENTOS SEPARADOS POR EL CARACTER
-    // for (int i = 0; i < splitted_command.size; i++)
-    // {
-    //     printf("SPLITTED %d, %s\n", i, splitted_command.data + (i * 21));
-    // }
+    for (int i = 0; i < splitted_command.size; i++)
+    {
+        printf("SPLITTED %d, [%s]\n", i, splitted_command.data + (i * 21));
+    }
 
     builtin_command command = str_to_command(splitted_command.data);
 
@@ -409,6 +404,17 @@ int execute_generic_command(char[] generic_command){
     }
 }
 
+int execute_batch_mode(FILE *file){
+
+    char line[MAX_SIZE_COMMAND];
+    while(fgets(line, 1024, file)){
+        char *token = line;        
+        
+        execute_generic_command(line);    
+    }
+    exit(0);
+}
+
 int main(int argc, char *argv[])
 {   
     char str[MAX_SIZE];
@@ -425,15 +431,11 @@ int main(int argc, char *argv[])
     {
         exit(1);
     }
-
-    // Batch Mode
     if (argc == 2)
     {
-        //TO DO: Iniciar el modo batch
-        printf("%s\n", argv[1]);
         
+        printf("%s\n", argv[1]);        
         FILE *fileRef = fopen(argv[1], "r");
-
 
     //VERIFICAR QUE EL ARCHIVO SE HAYA ABIERTO CORRECTAMENTE
         if(!fileRef){
@@ -451,9 +453,6 @@ int main(int argc, char *argv[])
     {
         printf("wish> ");
         fgets(str, MAX_SIZE, stdin);
-        execute_generic_command(str);   
-
-        
-
+        execute_generic_command(str);
     } while (1);
 }
