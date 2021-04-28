@@ -1,4 +1,0 @@
-echo "Inicio" & date +"%HH-%mm-%SS"
-sleep 5
-date +"%HH-%mm-%SS"
-

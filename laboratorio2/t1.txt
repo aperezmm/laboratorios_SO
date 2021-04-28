@@ -1,8 +1,0 @@
-ls /home
-ls /home/jsanta
-cd /home/jsanta
-mkdir t1
-ls /home
-ls /home
-ls /home
-ls /home

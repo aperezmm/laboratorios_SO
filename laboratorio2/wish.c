@@ -8,7 +8,7 @@
 #include <fcntl.h>
 
 #define MAX_SIZE 100
-#define MAX_SIZE_COMMAND 512
+#define MAX_SIZE_COMMAND 1024
 
 char *path_directory;
 
@@ -290,50 +290,52 @@ int update_path(struct SplittedResponse splitted_command)
 
 int run_command_in_path(struct SplittedResponse splitted_command)
 {
-    int child = fork();
-    // printf("%d\n", child);
 
-    if (child < 0)
+    int i = 0;
+    char pathToFile[MAX_SIZE];
+
+    int is_executable = -1;
+
+    while ((path_directory + (i * 40)) != "NULL" && is_executable == -1)
     {
-        handle_error("a");
+        strcpy(pathToFile, (path_directory + (i * 40)));
+        strcat(pathToFile, splitted_command.data);
+        //TO DO: Verificar que el archivo exista
+        is_executable = access(pathToFile, X_OK);
+        i++;
     }
-    else if (child == 0)
-    {
-        int i = 0;
-        char pathToFile[MAX_SIZE];
+    // printf("pathtofile: %s\n", pathToFile);
 
-        int is_executable = -1;
+    if (is_executable != -1)
+    { //TO DO: Aqui debería estar el fork.
+        //int child = fork();
 
-        while ((path_directory + (i * 40)) != "NULL" && is_executable == -1)
-        {
-            strcpy(pathToFile, (path_directory + (i * 40)));
-            strcat(pathToFile, splitted_command.data);
-            //TO DO: Verificar que el archivo exista
-            is_executable = access(pathToFile, X_OK);
-            i++;
-        }
-        // printf("pathtofile: %s\n", pathToFile);
-
-        if (is_executable != -1)
-        {
-            return run_command_with_params(pathToFile, splitted_command);
-        }
-        printf("is executable%d\n", is_executable);
-        if (is_executable == -1)
-        {
-            printf("Comando no encontrado\n");
-            return -1;
-        }
+        //if (child < 0)
+        //{
+             //handle_error("a");
+        //}
+        //else if (child == 0)
+        //{
+            //printf("SPLITTED_COMMAND.SIZE [%d]\n", splitted_command.size);
+        return run_command_with_params(pathToFile, splitted_command);
+        //}
+        //else
+        //{
+            //int wait_child = wait(NULL);
+            //printf("DESPUES DE ESPERAR HIJO [%s]\n", splitted_command.data);
+        //}
     }
-    else
+    // printf("is executable%d\n", is_executable);
+    if (is_executable == -1)
     {
-        int wait_child = wait(NULL);
-        // printf("DESPUES DE ESPERAR HIJO [%s]\n", splitted_command.data);
+        printf("Comando no encontrado\n");
+        return -1;
     }
 }
 
 int execute_generic_command(char *generic_command)
-{
+{   
+    
     struct SplittedResponse splitted_command;
     char *p = generic_command;
 
@@ -350,23 +352,36 @@ int execute_generic_command(char *generic_command)
 
     // Verificar si es un parallel command
     splitted_command = split_command_argument(generic_command, "&");
+    int status;
+    int pids[splitted_command.size];
+    for (int i = 0; i < splitted_command.size; i++){
+        pids[i]=0;
+    }
 
-    int rc = fork();
+    //printf("SPLITTED_COMMAND.SIZE [%d]\n", splitted_command.size);
 
-    // child
-    if (rc == 0)
-    {
+    // for (int i = 0; i < splitted_command.size; i++)
+    // {
+    //     printf("PARALELO[%d] - %s\n", i, splitted_command.data + (i * 21));
+    // }
 
-        for (int i = 0; i < splitted_command.size; i++)
+    for (int i = 0; i < splitted_command.size; i++)
+    {   
+        int pid = fork();
+
+        if(pid < 0)
         {
-            printf("elemento de parallel [%s]\n", splitted_command.data + (i * 21));
+            printf("Error lauching the process parellel\n");
+        }
+        else if(pid == 0)
+        {
             struct SplittedResponse single_command;
 
             single_command = split_command_argument(splitted_command.data + (i * 21), " ");
             //IMPRIMIMOS EL ARRAY DE ELEMENTOS SEPARADOS POR EL CARACTER
             // for (int i = 0; i < single_command.size; i++)
             // {
-            //     printf(" -->> SPLITTED %d, [%s]\n", i, single_command.data + (i * 21));
+            //     printf(" -->> HIJO PARALELO %d, [%s]\n", i, single_command.data + (i * 21));
             // }
 
             builtin_command command = str_to_command(single_command.data);
@@ -393,19 +408,17 @@ int execute_generic_command(char *generic_command)
             }
             else
             {
-                // printf("Searching in binary paths...\n");
                 int response = run_command_in_path(single_command);
-                //printf("response in else %d\n", response);
             }
-        }
+        }else{
+            pids[i] = pid;
+        }       
     }
-    else
-    {
-        wait(NULL);
-        printf("Despues de esperar La Linea entera\n");
 
-        return 1;
+    for(int i=0; i < splitted_command.size; i++){
+        waitpid(pids[i], &status, 0);
     }
+    printf("I am the father, everyone calm down, everything is under control\n");
 }
 
 int execute_batch_mode(FILE *file)
@@ -416,7 +429,20 @@ int execute_batch_mode(FILE *file)
     {
         char *token = line;
         // TODO buscar como eliminar el \r\n
+        // int stat;
+        // int ff = fork();
+        // if (ff == -1)
+        // {
+        //     printf("ERROR");
+        // }
+        // if (ff == 0)
+        // {
         execute_generic_command(line);
+        // }
+        // else
+        // {
+        //     waitpid(ff, &sta, 0);
+        // }
     }
     exit(0);
 }
