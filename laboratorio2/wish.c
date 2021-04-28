@@ -308,22 +308,7 @@ int run_command_in_path(struct SplittedResponse splitted_command)
 
     if (is_executable != -1)
     { //TO DO: Aqui debería estar el fork.
-        //int child = fork();
-
-        //if (child < 0)
-        //{
-             //handle_error("a");
-        //}
-        //else if (child == 0)
-        //{
-            //printf("SPLITTED_COMMAND.SIZE [%d]\n", splitted_command.size);
         return run_command_with_params(pathToFile, splitted_command);
-        //}
-        //else
-        //{
-            //int wait_child = wait(NULL);
-            //printf("DESPUES DE ESPERAR HIJO [%s]\n", splitted_command.data);
-        //}
     }
     // printf("is executable%d\n", is_executable);
     if (is_executable == -1)
@@ -334,8 +319,7 @@ int run_command_in_path(struct SplittedResponse splitted_command)
 }
 
 int execute_generic_command(char *generic_command)
-{   
-    
+{
     struct SplittedResponse splitted_command;
     char *p = generic_command;
 
@@ -348,14 +332,14 @@ int execute_generic_command(char *generic_command)
 
     // Normalize the parameters to avoid problems
     str_replace(generic_command, ">", " > ");
-    // printf("[%s]\n", generic_command);
 
     // Verificar si es un parallel command
     splitted_command = split_command_argument(generic_command, "&");
     int status;
     int pids[splitted_command.size];
-    for (int i = 0; i < splitted_command.size; i++){
-        pids[i]=0;
+    for (int i = 0; i < splitted_command.size; i++)
+    {
+        pids[i] = 0;
     }
 
     //printf("SPLITTED_COMMAND.SIZE [%d]\n", splitted_command.size);
@@ -366,26 +350,34 @@ int execute_generic_command(char *generic_command)
     // }
 
     for (int i = 0; i < splitted_command.size; i++)
-    {   
+    {
         int pid = fork();
 
-        if(pid < 0)
+        struct SplittedResponse single_command;
+        single_command = split_command_argument(splitted_command.data + (i * 21), " ");
+        builtin_command command = str_to_command(single_command.data);
+
+        //IMPRIMIMOS EL ARRAY DE ELEMENTOS SEPARADOS POR EL CARACTER
+        // for (int i = 0; i < single_command.size; i++)
+        // {
+        //     printf(" -->> HIJO PARALELO %d, [%s]\n", i, single_command.data + (i * 21));
+        // }
+
+        if (pid < 0)
         {
             printf("Error lauching the process parellel\n");
         }
-        else if(pid == 0)
+        else if (pid == 0)
         {
-            struct SplittedResponse single_command;
-
-            single_command = split_command_argument(splitted_command.data + (i * 21), " ");
-            //IMPRIMIMOS EL ARRAY DE ELEMENTOS SEPARADOS POR EL CARACTER
-            // for (int i = 0; i < single_command.size; i++)
-            // {
-            //     printf(" -->> HIJO PARALELO %d, [%s]\n", i, single_command.data + (i * 21));
-            // }
-
-            builtin_command command = str_to_command(single_command.data);
-
+            // CHILD PROCESS USED FOR NOT BUILT-IN COMMANDS ONLY.
+            if (command == not_found)
+            {
+                int response = run_command_in_path(single_command);
+            }
+        }
+        else
+        {
+            // FATHER PROCESS
             if (command != not_found)
             {
                 switch (command)
@@ -406,43 +398,25 @@ int execute_generic_command(char *generic_command)
                     printf("####### COMMAND UNHANDLED ########\n");
                 }
             }
-            else
-            {
-                int response = run_command_in_path(single_command);
-            }
-        }else{
+
             pids[i] = pid;
-        }       
+        }
     }
 
-    for(int i=0; i < splitted_command.size; i++){
+    for (int i = 0; i < splitted_command.size; i++)
+    {
         waitpid(pids[i], &status, 0);
     }
-    printf("I am the father, everyone calm down, everything is under control\n");
 }
 
 int execute_batch_mode(FILE *file)
 {
-    printf("execute_batch_mode\n");
+    printf("EXECUTING IN BATCH MODE\n");
     char line[MAX_SIZE_COMMAND];
     while (fgets(line, 1024, file))
     {
         char *token = line;
-        // TODO buscar como eliminar el \r\n
-        // int stat;
-        // int ff = fork();
-        // if (ff == -1)
-        // {
-        //     printf("ERROR");
-        // }
-        // if (ff == 0)
-        // {
         execute_generic_command(line);
-        // }
-        // else
-        // {
-        //     waitpid(ff, &sta, 0);
-        // }
     }
     exit(0);
 }
