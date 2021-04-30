@@ -63,33 +63,24 @@ int actual_directory()
 
 int change_directory(struct SplittedResponse splitted_command)
 {
-    if (splitted_command.size >= 3)
+    if (splitted_command.size == 2)
     {
-        //printf("wish: too many arguments\n");
-        return -1;
-    }
+        char *route = splitted_command.data + (21);
+        int result = chdir(route);
 
-    if (splitted_command.size == 1)
-    {
-        chdir(getenv("HOME"));
         actual_directory();
-        return 0;
+
+        if (result == -1)
+        {
+            handle_error("No such file or directory");
+        }
+        else
+        {
+            return 0;
+        }
     }
-
-    char *route = splitted_command.data + (21);
-    int result = chdir(route);
-
-    actual_directory();
-    //printf("Después de ejecutar el proceso hijo\n");
-
-    if (result == -1)
-    {
-        //printf("wish: No such file or directory\n");
-        return -1;
-    }
-    else
-    {
-        return 0;
+    else {
+        handle_error("Bad cd");
     }
 }
 
@@ -214,6 +205,9 @@ int run_command_with_params(char *binary_path, struct SplittedResponse splitted_
         handle_error("Redirección con error");
     }
 
+    // int response = 0;
+
+    // TODO: verify if it's posible to do it easier.
     if (is_redirection == 1)
     {
         close(STDOUT_FILENO);
@@ -229,21 +223,25 @@ int run_command_with_params(char *binary_path, struct SplittedResponse splitted_
             args[i] = strdup(splitted_command.data + (i * 21));
         }
         args[splitted_command.size - 2] = NULL;
-        int response = execvp(binary_path, args);
+        return execv(binary_path, args);
     }
     else
     {
         char *args[splitted_command.size + 1];
-        args[0] = strdup(binary_path);
+        args[0] = strdup(splitted_command.data);
+        // args[0] = strdup("ls");
+
+        //printf("Comando -- [%s]", splitted_command.data);
+
         for (int i = 1; i < splitted_command.size; i++)
         {
             //printf("ARG[%d] = [%s]\n", i, splitted_command.data+(i*21));
             args[i] = strdup(splitted_command.data + (i * 21));
         }
         args[splitted_command.size] = NULL;
-        int response = execvp(binary_path, args);
-        printf("RESPONSE RUN_COMMAND_WITH_PARAMS %d\n", response);
+        return execv(binary_path, args);
     }
+
 }
 
 int update_path(struct SplittedResponse splitted_command)
@@ -288,6 +286,7 @@ int update_path(struct SplittedResponse splitted_command)
     }*/
 }
 
+// Run a single command
 int run_command_in_path(struct SplittedResponse splitted_command)
 {
 
@@ -295,7 +294,9 @@ int run_command_in_path(struct SplittedResponse splitted_command)
     char pathToFile[MAX_SIZE];
 
     int is_executable = -1;
+    int response = -1;
 
+    // Search binary in all available directories.
     while ((path_directory + (i * 40)) != "NULL" && is_executable == -1)
     {
         strcpy(pathToFile, (path_directory + (i * 40)));
@@ -304,18 +305,16 @@ int run_command_in_path(struct SplittedResponse splitted_command)
         is_executable = access(pathToFile, X_OK);
         i++;
     }
-    // printf("pathtofile: %s\n", pathToFile);
 
-    if (is_executable != -1)
-    { //TO DO: Aqui debería estar el fork.
-        return run_command_with_params(pathToFile, splitted_command);
+    
+
+    if(is_executable != -1){
+        
+        response = run_command_with_params(pathToFile, splitted_command);
+        // printf("---[%d]", response);
     }
-    // printf("is executable%d\n", is_executable);
-    if (is_executable == -1)
-    {
-        printf("Comando no encontrado\n");
-        return -1;
-    }
+
+    return response;
 }
 
 int execute_generic_command(char *generic_command)
@@ -342,6 +341,10 @@ int execute_generic_command(char *generic_command)
         pids[i] = 0;
     }
 
+    // esto es provicional....
+    int response = -365;
+
+
     //printf("SPLITTED_COMMAND.SIZE [%d]\n", splitted_command.size);
 
     // for (int i = 0; i < splitted_command.size; i++)
@@ -356,6 +359,8 @@ int execute_generic_command(char *generic_command)
         struct SplittedResponse single_command;
         single_command = split_command_argument(splitted_command.data + (i * 21), " ");
         builtin_command command = str_to_command(single_command.data);
+
+        
 
         //IMPRIMIMOS EL ARRAY DE ELEMENTOS SEPARADOS POR EL CARACTER
         // for (int i = 0; i < single_command.size; i++)
@@ -372,7 +377,7 @@ int execute_generic_command(char *generic_command)
             // CHILD PROCESS USED FOR NOT BUILT-IN COMMANDS ONLY.
             if (command == not_found)
             {
-                int response = run_command_in_path(single_command);
+                response = run_command_in_path(single_command);
             }
         }
         else
@@ -406,12 +411,16 @@ int execute_generic_command(char *generic_command)
     for (int i = 0; i < splitted_command.size; i++)
     {
         waitpid(pids[i], &status, 0);
+
+        // printf("RES [%d]\n", response);
     }
+
+
 }
 
 int execute_batch_mode(FILE *file)
 {
-    printf("EXECUTING IN BATCH MODE\n");
+    // printf("EXECUTING IN BATCH MODE\n");
     char line[MAX_SIZE_COMMAND];
     while (fgets(line, 1024, file))
     {
