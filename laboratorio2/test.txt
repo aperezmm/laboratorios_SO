@@ -1,3 +1,0 @@
-date +"%H:%M:%S"
-sleep 2 & sleep 5 & sleep 3 & sleep 1
-date +"%H:%M:%S"

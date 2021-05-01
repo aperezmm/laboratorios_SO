@@ -1,2 +1,0 @@
-date +"%HH-%mm-%SS"
-sleep 2
