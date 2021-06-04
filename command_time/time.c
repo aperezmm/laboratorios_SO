@@ -125,8 +125,6 @@ int run_command_with_params(struct SplittedResponse splitted_command)
         return -1;
     }
 
-    printf("is_redirection {%d}\n", is_redirection);
-
     // TODO: verify if it's posible to do it easier.
     if (is_redirection == 1)
     {
@@ -155,11 +153,6 @@ int run_command_with_params(struct SplittedResponse splitted_command)
             args[i] = strdup(splitted_command.data + (i * 50));
         }
         args[splitted_command.size] = NULL;
-
-        for (int i = 0; i < splitted_command.size; i++)
-        {
-            printf("[ARG[%d] = %s]\n", i, args[i]);
-        }
 
         return execvp(args[0], args);
     }
@@ -195,7 +188,6 @@ struct SplittedResponse split_command_argument(char *command, char *delimiter, i
 
 int execute_generic_command(char *generic_command)
 {
-    printf("on execute_generic_command");
     struct SplittedResponse parallel_commands;
     char *p = generic_command;
 
@@ -252,13 +244,20 @@ int execute_generic_command(char *generic_command)
     }
 }
 
-int millisDiff(struct timeval start, struct timeval end)
+struct timeval millisDiff(struct timeval start, struct timeval end)
 {
+    struct timeval result;
     int ONE_M = 1000000;
     int startUs = (start.tv_sec * ONE_M) + start.tv_usec;
     int endUs = (end.tv_sec * ONE_M) + end.tv_usec;
 
-    return endUs - startUs;
+    int diff = endUs - startUs;
+    int diff_sec = (int)diff / ONE_M;
+
+    result.tv_sec = diff_sec;
+    result.tv_usec = diff - (diff_sec * ONE_M);
+
+    return result;
 }
 
 int main(int argc, char *argv[])
@@ -298,9 +297,9 @@ int main(int argc, char *argv[])
         // father
         wait(NULL);
         gettimeofday(&end_time, NULL);
-        int diff = millisDiff(start_time, end_time);
+        struct timeval diff = millisDiff(start_time, end_time);
 
-        printf("{%d}\n", diff);
+        printf("DURATION %d S, %d Us\n", diff.tv_sec, diff.tv_usec);
     }
 
     return 0;
