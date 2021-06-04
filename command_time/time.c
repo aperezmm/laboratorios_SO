@@ -16,7 +16,6 @@ struct SplittedResponse
 
 void handle_error(char *c)
 {
-    printf("--> {%s}\n", c);
     char error_message[30] = "An error has occurred\n";
     write(STDERR_FILENO, error_message, strlen(error_message));
 }
@@ -259,7 +258,7 @@ int millisDiff(struct timeval start, struct timeval end)
     int startUs = (start.tv_sec * ONE_M) + start.tv_usec;
     int endUs = (end.tv_sec * ONE_M) + end.tv_usec;
 
-        return endUs - startUs;
+    return endUs - startUs;
 }
 
 int main(int argc, char *argv[])
@@ -285,7 +284,6 @@ int main(int argc, char *argv[])
 
     if (pid == 0)
     {
-        printf("CHILD\n");
         char command_string[500] = "";
         for (int i = 1; i < argc; i++)
         {
